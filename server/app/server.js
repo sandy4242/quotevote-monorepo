@@ -22,14 +22,26 @@ if (process.env.NODE_ENV === 'dev') {
   dotenvConfig.config({ path: './.env' });
 }
 
+if (process.env.CLIENT_URL.endsWith('/')) {
+  logger.info('CLIENT_URL ends with /, removing it');
+  process.env.CLIENT_URL = process.env.CLIENT_URL.slice(0, -1);
+}
+
 const GRAPHQL_PORT = process.env.PORT || 3000;
 
 logger.info('Database', process.env.DATABASE_URL);
 
-mongoose.connect(process.env.DATABASE_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.DATABASE_URL);
+    logger.info('MongoDB Connected...');
+  } catch (err) {
+    console.error('MongoDB connection error:', err.stack);
+    process.exit(1);
+  }
+};
+
+connectDB();
 
 const app = express();
 
